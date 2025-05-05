@@ -1,0 +1,92 @@
+/* Set html and body to 100% height for full-page layout */
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(to bottom, #f7f8fc, #ffffff);
+  }
+  /* Background style for the page */
+  body {
+    background: linear-gradient(to bottom, #f7f8fc, #ffffff);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow-x: hidden;  /* Prevent horizontal scroll */
+  }
+  
+  /* Home page container */
+  .home-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;  /* Ensures content is aligned from the top */
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 20px;
+    background: linear-gradient(to bottom, #f0f4f8, #ffffff);
+    min-height: 100vh;
+    box-sizing: border-box; /* Make sure padding doesn't cause overflow */
+  }
+  
+  
+  /* Home title style */
+  .home-title {
+    text-align: center;
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin-bottom: 40px;
+    color: #2d3436;
+    position: relative;
+  }
+  
+  .home-title::after {
+    content: '';
+    width: 60px;
+    height: 4px;
+    background-color: #ff6b6b;
+    display: block;
+    margin: 8px auto 0;
+    border-radius: 2px;
+  }
+  
+  /* Hotel list style */
+  .hotel-list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 30px;
+    animation: fadeIn 1s ease-in-out;
+  }
+  
+  /* Fade-in animation for the hotel list */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  /* Filter, search, and sort containers */
+  .filter-container, .search-container, .sort-container {
+    margin: 20px auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  /* Input and select styles */
+  .filter-container select, .sort-container select, .search-container input {
+    padding: 6px 12px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+  }
+  
+  .search-container input {
+    width: 200px;
+  }
+  
+  .sort-container select {
+    width: 150px;
+  }
+  
