@@ -1,101 +1,83 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import axios from 'axios';
-import './HotelPage.css';
+import './HotelPage.css'
 
-function HotelPage() {
-  const { id } = useParams();
+const HotelPage = () => {
+  const { hotel_id } = useParams();
   const [hotel, setHotel] = useState(null);
   const [rooms, setRooms] = useState([]);
-  const [checkInDate, setCheckInDate] = useState('');
-  const [checkOutDate, setCheckOutDate] = useState('');
-  const [totalPrice, setTotalPrice] = useState(0);
-  const [availableRooms, setAvailableRooms] = useState([]); // Filtered available rooms
+  const [selectedDate, setSelectedDate] = useState('');
+  const [bookingMessage, setBookingMessage] = useState('');
 
   useEffect(() => {
-    // Fetch hotel details
-    axios.get(`http://localhost:5000/api/hotel/${id}`)
-      .then(res => setHotel(res.data))
-      .catch(err => console.error('Error fetching hotel details:', err));
+    fetch(`http://localhost:5000/api/hotel/${hotel_id}`)
+      .then(res => res.json())
+      .then(data => setHotel(data))
+      .catch(err => console.error("Error fetching hotel details:", err));
+  }, [hotel_id]);
 
-    // Fetch available rooms for this hotel
-    axios.get(`http://localhost:5000/api/hotel/${id}/rooms`)
-      .then(res => {
-        setRooms(res.data);
-        setAvailableRooms(res.data.filter(room => room.availability === 1)); // Filter available rooms
-      })
-      .catch(err => console.error('Error fetching room details:', err));
-  }, [id]);
-
-  const handleRoomSelection = (price) => {
-    // Calculate price based on number of days
-    const checkIn = new Date(checkInDate);
-    const checkOut = new Date(checkOutDate);
-    const daysDifference = Math.floor((checkOut - checkIn) / (1000 * 3600 * 24));
-
-    if (daysDifference < 1) {
-      alert('Check-out date must be later than check-in date.');
-      return;
+  useEffect(() => {
+    if (selectedDate && hotel_id) {
+      fetch(`http://localhost:5000/api/hotel/${hotel_id}/rooms?date=${selectedDate}`)
+        .then(res => res.json())
+        .then(data => setRooms(data))
+        .catch(err => console.error("Error fetching rooms:", err));
     }
+  }, [selectedDate, hotel_id]);
 
-    setTotalPrice(price * daysDifference);  // Update total price based on number of days
+  const handleBooking = (room_id) => {
+    const user_id = 1; // You can replace this with the actual logged-in user's ID
+    fetch('http://localhost:5000/api/book-room', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ room_id, booking_date: selectedDate, user_id }),
+    })
+      .then(res => res.json())
+      .then(data => setBookingMessage(data.message || 'Booking failed'))
+      .catch(err => setBookingMessage('Error booking room'));
   };
-
-  const handleBooking = () => {
-    alert(`Booking successful! Total price: $${totalPrice}`);
-  };
-
-  if (!hotel) return <p>Loading hotel details...</p>;
-  if (!availableRooms.length) return <p>No available rooms for this hotel.</p>;
 
   return (
-    <div className="hotel-page-container">
-      <div className="hotel-image">
-        <img src={hotel.photo_url} alt={hotel.name} />
-      </div>
-      <div className="hotel-details">
-        <h2>{hotel.name}</h2>
+    hotel && (
+      <div className="hotel-page">
+        <h1>{hotel.name}</h1>
         <p>{hotel.description}</p>
+        <img src={hotel.image} alt={hotel.name} />
+        <p>{hotel.location}</p>
+        <p>Price Range: {hotel.price_range}</p>
+        <p>Rating: {hotel.rating}</p>
 
-        {/* Availability Section */}
-        <div className="availability-section">
-          <h3>Check Availability</h3>
-          <label htmlFor="check-in-date">Check-In Date</label>
+        <div className="date-selector">
           <input
             type="date"
-            id="check-in-date"
-            value={checkInDate}
-            onChange={(e) => setCheckInDate(e.target.value)}
-          />
-          <label htmlFor="check-out-date">Check-Out Date</label>
-          <input
-            type="date"
-            id="check-out-date"
-            value={checkOutDate}
-            onChange={(e) => setCheckOutDate(e.target.value)}
+            value={selectedDate}
+            onChange={(e) => setSelectedDate(e.target.value)}
           />
         </div>
 
-        {/* Pricing Section */}
-        <div className="pricing-section">
-          <h3>Room Types and Pricing</h3>
-          {availableRooms.map((room) => (
-            <div key={room.id} className="room-card">
-              <h4>{room.type}</h4>
-              <div className="price">${room.price} per night</div>
-              <button onClick={() => handleRoomSelection(room.price)}>Select Room</button>
-            </div>
-          ))}
+        <div className="rooms">
+          {rooms.length > 0 ? (
+            rooms.map((room) => (
+              <div key={room.room_id} className="room">
+                <h3>{room.name}</h3>
+                <p>{room.description}</p>
+                <p>Price: {room.price}</p>
+                <button onClick={() => handleBooking(room.room_id)}>
+                  Book Room
+                </button>
+              </div>
+            ))
+          ) : (
+            <p>No rooms available for the selected date</p>
+          )}
         </div>
 
-        {/* Booking Section */}
-        <div className="booking-section">
-          <p>Total Price: ${totalPrice}</p>
-          <button onClick={handleBooking}>Book Now</button>
-        </div>
+        {bookingMessage && <p>{bookingMessage}</p>}
       </div>
-    </div>
+    )
   );
-}
+};
 
 export default HotelPage;
